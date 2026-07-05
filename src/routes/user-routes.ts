@@ -74,16 +74,11 @@ export const userRoutes = new Elysia({ prefix: "/api" })
     set.status = 200;
     return profile;
   }, {
-    headers: t.Object({
-      authorization: t.String({
-        description: "Format: Bearer <session_token>",
-        default: "Bearer ",
-      }),
-    }),
     detail: {
       summary: "Ambil Profil User",
       description: "Mendapatkan data profil user yang sedang aktif berdasarkan authorization header.",
       tags: ["User Profile"],
+      security: [{ bearerAuth: [] }],
     }
   })
 
@@ -104,15 +99,10 @@ export const userRoutes = new Elysia({ prefix: "/api" })
     set.status = 200;
     return { data: "OK" };
   }, {
-    headers: t.Object({
-      authorization: t.String({
-        description: "Format: Bearer <session_token>",
-        default: "Bearer ",
-      }),
-    }),
     detail: {
       summary: "Logout User",
       description: "Menghapus token session aktif dari database untuk mengeluarkan user.",
       tags: ["Authentication"],
+      security: [{ bearerAuth: [] }],
     }
   });

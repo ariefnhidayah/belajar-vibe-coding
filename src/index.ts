@@ -21,6 +21,15 @@ export const app = new Elysia()
           version: "1.0.0",
           description: "Dokumentasi API interaktif untuk aplikasi Belajar Vibe Coding",
         },
+        components: {
+          securitySchemes: {
+            bearerAuth: {
+              type: "http",
+              scheme: "bearer",
+              bearerFormat: "UUID",
+            },
+          },
+        },
       }
     })
   )
