@@ -57,7 +57,7 @@ export const userRoutes = new Elysia({ prefix: "/api" })
       throw new Error("Invalid or expired session");
     }
 
-    const token = authHeader.split(" ")[1]!;
+    const token = authHeader.substring(7);
     const session = await userService.verifySession(token);
     const profile = await userService.getProfile(Number(session.userId));
     
@@ -76,7 +76,7 @@ export const userRoutes = new Elysia({ prefix: "/api" })
       throw new Error("Invalid or expired token");
     }
 
-    const token = authHeader.split(" ")[1]!;
+    const token = authHeader.substring(7);
     await userService.logout(token);
 
     set.status = 200;

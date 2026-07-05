@@ -1,6 +1,6 @@
 import { UserRepository } from "../repositories/user-repository";
 import { SessionRepository } from "../repositories/session-repository";
-import crypto from "crypto";
+import crypto from "node:crypto";
 
 /**
  * Melakukan hashing SHA-256 pada token sesi mentah.
