@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
 import { openapi } from "@elysia/openapi";
 import { userRoutes } from "./routes/user-routes";
+import { BadRequestError, UnauthorizedError, NotFoundError } from "./errors";
 
 // Validate required environment variables on startup
 const requiredEnv = ["DATABASE_HOST", "DATABASE_PORT", "DATABASE_USER", "DATABASE_PASSWORD", "DATABASE_NAME"];
@@ -44,7 +45,7 @@ export const app = new Elysia()
       return {
         error: "Validation failed",
         details: error.all.map((err) => ({
-          field: err.path.substring(1), // Menghapus '/' di depan nama parameter
+          field: err.path ? err.path.replace(/^\//, '') : 'root', // Menghapus '/' di depan nama parameter dengan aman
           message: err.message,
         })),
       };
@@ -56,27 +57,20 @@ export const app = new Elysia()
       return { error: "Route not found" };
     }
 
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    const badRequestErrors = ["Email already exists"];
-    const unauthorizedErrors = ["Invalid email or password", "Invalid or expired token", "Invalid or expired session"];
-    const notFoundErrors = ["User not found"];
-
-    // Menangani error Bad Request spesifik yang dilempar oleh service
-    if (badRequestErrors.includes(errorMessage)) {
+    // Menangani custom error HTTP dari layer service
+    if (error instanceof BadRequestError) {
       set.status = 400;
-      return { error: errorMessage };
+      return { error: error.message };
     }
 
-    // Menangani error autentikasi yang dilempar oleh service
-    if (unauthorizedErrors.includes(errorMessage)) {
+    if (error instanceof UnauthorizedError) {
       set.status = 401;
-      return { error: errorMessage };
+      return { error: error.message };
     }
 
-    // Menangani error data tidak ditemukan yang dilempar oleh service
-    if (notFoundErrors.includes(errorMessage)) {
+    if (error instanceof NotFoundError) {
       set.status = 404;
-      return { error: errorMessage };
+      return { error: error.message };
     }
 
     // Tangkap error duplikasi MySQL (unique constraint violation) secara aman

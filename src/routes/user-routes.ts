@@ -1,4 +1,5 @@
 import { Elysia, t } from "elysia";
+import { UnauthorizedError } from "../errors";
 import { UserService } from "../services/user-services";
 
 const userService = new UserService();
@@ -113,7 +114,7 @@ export const userRoutes = new Elysia({ prefix: "/api" })
    */
   .get("/users/me", async ({ user, set }) => {
     if (!user) {
-      throw new Error("Invalid or expired session");
+      throw new UnauthorizedError("Invalid or expired session");
     }
 
     const profile = await userService.getProfile(user.id);
@@ -146,7 +147,7 @@ export const userRoutes = new Elysia({ prefix: "/api" })
    */
   .delete("/logout", async ({ user, set }) => {
     if (!user) {
-      throw new Error("Invalid or expired token");
+      throw new UnauthorizedError("Invalid or expired token");
     }
 
     await userService.logout(user.token);
