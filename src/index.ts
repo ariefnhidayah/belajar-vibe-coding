@@ -4,7 +4,7 @@ import { userRoutes } from "./routes/user-routes";
 // Validate required environment variables on startup
 const requiredEnv = ["DATABASE_HOST", "DATABASE_PORT", "DATABASE_USER", "DATABASE_PASSWORD", "DATABASE_NAME"];
 for (const envName of requiredEnv) {
-  if (!process.env[envName]) {
+  if (process.env[envName] === undefined) {
     throw new Error(`Missing environment variable: ${envName}`);
   }
 }
