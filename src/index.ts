@@ -41,7 +41,13 @@ export const app = new Elysia()
     // Menangani error validasi schema (misal: panjang karakter, tipe data tidak sesuai)
     if (code === "VALIDATION") {
       set.status = 400;
-      return { error: error.message };
+      return {
+        error: "Validation failed",
+        details: error.all.map((err) => ({
+          field: err.path.substring(1), // Menghapus '/' di depan nama parameter
+          message: err.message,
+        })),
+      };
     }
 
     // Menangani error route tidak ditemukan (404)
