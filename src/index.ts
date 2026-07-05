@@ -1,4 +1,5 @@
 import { Elysia } from "elysia";
+import { openapi } from "@elysia/openapi";
 import { userRoutes } from "./routes/user-routes";
 
 // Validate required environment variables on startup
@@ -11,6 +12,18 @@ for (const envName of requiredEnv) {
 
 // Inisialisasi instance ElysiaJS utama
 export const app = new Elysia()
+  .use(
+    openapi({
+      path: "/swagger",
+      documentation: {
+        info: {
+          title: "Belajar Vibe Coding API",
+          version: "1.0.0",
+          description: "Dokumentasi API interaktif untuk aplikasi Belajar Vibe Coding",
+        },
+      }
+    })
+  )
   /**
    * Hook global error handler untuk menangkap exception di seluruh aplikasi.
    * Melakukan pemetaan error ke status code HTTP yang sesuai.

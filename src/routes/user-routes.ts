@@ -19,10 +19,15 @@ export const userRoutes = new Elysia({ prefix: "/api" })
     },
     {
       body: t.Object({
-        name: t.String({ maxLength: 255 }),
-        email: t.String({ format: "email", maxLength: 255 }),
-        password: t.String({ minLength: 8, maxLength: 72 }),
+        name: t.String({ maxLength: 255, error: "Nama wajib diisi" }),
+        email: t.String({ format: "email", maxLength: 255, error: "Email tidak valid" }),
+        password: t.String({ minLength: 8, maxLength: 72, error: "Password minimal 8 karakter" }),
       }),
+      detail: {
+        summary: "Registrasi User Baru",
+        description: "Mendaftarkan user baru ke sistem dengan name, email, dan password.",
+        tags: ["Authentication"],
+      }
     }
   )
 
@@ -40,9 +45,14 @@ export const userRoutes = new Elysia({ prefix: "/api" })
     },
     {
       body: t.Object({
-        email: t.String({ format: "email", maxLength: 255 }),
-        password: t.String({ minLength: 8, maxLength: 72 }),
+        email: t.String({ format: "email", maxLength: 255, error: "Format email salah" }),
+        password: t.String({ minLength: 8, maxLength: 72, error: "Password minimal 8 karakter" }),
       }),
+      detail: {
+        summary: "Login User",
+        description: "Melakukan autentikasi email & password dan menghasilkan session token.",
+        tags: ["Authentication"],
+      }
     }
   )
 
@@ -63,6 +73,18 @@ export const userRoutes = new Elysia({ prefix: "/api" })
     
     set.status = 200;
     return profile;
+  }, {
+    headers: t.Object({
+      authorization: t.String({
+        description: "Format: Bearer <session_token>",
+        default: "Bearer ",
+      }),
+    }),
+    detail: {
+      summary: "Ambil Profil User",
+      description: "Mendapatkan data profil user yang sedang aktif berdasarkan authorization header.",
+      tags: ["User Profile"],
+    }
   })
 
   // Logout Route: DELETE /api/logout
@@ -81,4 +103,16 @@ export const userRoutes = new Elysia({ prefix: "/api" })
 
     set.status = 200;
     return { data: "OK" };
+  }, {
+    headers: t.Object({
+      authorization: t.String({
+        description: "Format: Bearer <session_token>",
+        default: "Bearer ",
+      }),
+    }),
+    detail: {
+      summary: "Logout User",
+      description: "Menghapus token session aktif dari database untuk mengeluarkan user.",
+      tags: ["Authentication"],
+    }
   });
