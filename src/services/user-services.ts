@@ -1,7 +1,9 @@
 import { UserRepository } from "../repositories/user-repository";
+import { SessionRepository } from "../repositories/session-repository";
 
 export class UserService {
   private readonly userRepo = new UserRepository();
+  private readonly sessionRepo = new SessionRepository();
 
   async register(data: { name: string; email: string; password: string }) {
     const existingUser = await this.userRepo.findByEmail(data.email);
@@ -28,10 +30,7 @@ export class UserService {
     };
   }
 
-  async login(
-    data: { email: string; password: string },
-    jwtSign: (payload: { id: number; email: string }) => Promise<string>
-  ) {
+  async login(data: { email: string; password: string }) {
     const user = await this.userRepo.findByEmail(data.email);
     if (!user) {
       throw new Error("Invalid email or password");
@@ -42,12 +41,13 @@ export class UserService {
       throw new Error("Invalid email or password");
     }
 
-    const accessToken = await jwtSign({
-      id: user.id,
-      email: user.email,
+    const sessionToken = crypto.randomUUID();
+    await this.sessionRepo.create({
+      token: sessionToken,
+      userId: user.id,
     });
 
-    return { access_token: accessToken };
+    return { access_token: sessionToken };
   }
 
   async getProfile(userId: number) {
@@ -61,5 +61,13 @@ export class UserService {
       name: user.name,
       email: user.email,
     };
+  }
+
+  async verifySession(token: string) {
+    const session = await this.sessionRepo.findByToken(token);
+    if (!session) {
+      throw new Error("Invalid or expired session");
+    }
+    return session;
   }
 }

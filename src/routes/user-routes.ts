@@ -41,9 +41,9 @@ export const userRoutes = new Elysia({ prefix: "/api" })
   // Login Route: POST /api/login
   .post(
     "/login",
-    async ({ body, jwt, set }) => {
+    async ({ body, set }) => {
       try {
-        const result = await userService.login(body, jwt.sign);
+        const result = await userService.login(body);
         set.status = 200;
         return result;
       } catch (error: any) {
@@ -64,7 +64,7 @@ export const userRoutes = new Elysia({ prefix: "/api" })
   )
 
   // Profile Route: GET /api/users/me
-  .get("/users/me", async ({ headers, jwt, set }) => {
+  .get("/users/me", async ({ headers, set }) => {
     try {
       const authHeader = headers["authorization"];
       if (!authHeader?.startsWith("Bearer ")) {
@@ -73,15 +73,8 @@ export const userRoutes = new Elysia({ prefix: "/api" })
       }
 
       const token = authHeader.split(" ")[1];
-      const payload = await jwt.verify(token);
-
-      if (!payload) {
-        set.status = 401;
-        return { error: "Invalid or expired access token" };
-      }
-
-      const userId = (payload as any).id;
-      const profile = await userService.getProfile(Number(userId));
+      const session = await userService.verifySession(token);
+      const profile = await userService.getProfile(Number(session.userId));
       
       set.status = 200;
       return profile;
