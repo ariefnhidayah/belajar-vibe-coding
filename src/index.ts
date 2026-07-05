@@ -36,6 +36,12 @@ const app = new Elysia()
       return { error: errorMessage };
     }
 
+    // Tangkap error duplikasi MySQL (unique constraint violation)
+    if ((error as any).code === "ER_DUP_ENTRY" || (error as any).errno === 1062) {
+      set.status = 400;
+      return { error: "Email already exists" };
+    }
+
     console.error("Unhandled error:", error);
     set.status = 500;
     return { error: "Internal Server Error" };
