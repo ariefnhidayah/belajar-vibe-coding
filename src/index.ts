@@ -4,7 +4,7 @@ import { userRoutes } from "./routes/user-routes";
 // Validate required environment variables on startup
 const requiredEnv = ["DATABASE_HOST", "DATABASE_PORT", "DATABASE_USER", "DATABASE_PASSWORD", "DATABASE_NAME"];
 for (const envName of requiredEnv) {
-  if (!process.env[envName]) {
+  if (process.env[envName] === undefined) {
     throw new Error(`Missing environment variable: ${envName}`);
   }
 }
@@ -34,6 +34,12 @@ const app = new Elysia()
     if (notFoundErrors.includes(errorMessage)) {
       set.status = 404;
       return { error: errorMessage };
+    }
+
+    // Tangkap error duplikasi MySQL (unique constraint violation)
+    if ((error as any).code === "ER_DUP_ENTRY" || (error as any).errno === 1062) {
+      set.status = 400;
+      return { error: "Email already exists" };
     }
 
     console.error("Unhandled error:", error);
