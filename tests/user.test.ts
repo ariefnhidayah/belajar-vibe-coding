@@ -28,7 +28,7 @@ describe("API Unit Tests", () => {
         })
       );
       expect(response.status).toBe(201);
-      const data = await response.json();
+      const data = (await response.json()) as any;
       expect(data.email).toBe(validUser.email);
       expect(data.name).toBe(validUser.name);
       expect(data.password).toBeUndefined(); // Password hash jangan sampai bocor
@@ -74,7 +74,7 @@ describe("API Unit Tests", () => {
         })
       );
       expect(duplicateRes.status).toBe(400);
-      const errData = await duplicateRes.json();
+      const errData = (await duplicateRes.json()) as any;
       expect(errData.error).toBe("Email already exists");
     });
   });
@@ -100,7 +100,7 @@ describe("API Unit Tests", () => {
         })
       );
       expect(response.status).toBe(200);
-      const data = await response.json();
+      const data = (await response.json()) as any;
       expect(data.access_token).toBeDefined();
     });
 
@@ -144,7 +144,7 @@ describe("API Unit Tests", () => {
           body: JSON.stringify({ email: validUser.email, password: validUser.password }),
         })
       );
-      const data = await loginRes.json();
+      const data = (await loginRes.json()) as any;
       token = data.access_token;
     });
 
@@ -155,7 +155,7 @@ describe("API Unit Tests", () => {
         })
       );
       expect(response.status).toBe(200);
-      const profile = await response.json();
+      const profile = (await response.json()) as any;
       expect(profile.email).toBe(validUser.email);
     });
 
@@ -191,7 +191,7 @@ describe("API Unit Tests", () => {
           body: JSON.stringify({ email: validUser.email, password: validUser.password }),
         })
       );
-      token = (await loginRes.json()).access_token;
+      token = ((await loginRes.json()) as any).access_token;
     });
 
     it("harus berhasil logout dengan token valid", async () => {
@@ -217,7 +217,7 @@ describe("API Unit Tests", () => {
     it("harus mengembalikan info server pada route root (GET /)", async () => {
       const response = await app.handle(new Request(`${BASE_URL}/`));
       expect(response.status).toBe(200);
-      const data = await response.json();
+      const data = (await response.json()) as any;
       expect(data.message).toBe("ElysiaJS + Drizzle + MySQL API");
     });
 
