@@ -9,11 +9,16 @@ for (const envName of requiredEnv) {
   }
 }
 
-const app = new Elysia()
+export const app = new Elysia()
   .onError(({ code, error, set }) => {
     if (code === "VALIDATION") {
       set.status = 400;
       return { error: error.message };
+    }
+
+    if (code === "NOT_FOUND") {
+      set.status = 404;
+      return { error: "Route not found" };
     }
 
     const errorMessage = error instanceof Error ? error.message : String(error);
