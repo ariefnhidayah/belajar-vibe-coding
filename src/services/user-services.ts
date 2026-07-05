@@ -1,6 +1,7 @@
 import { UserRepository } from "../repositories/user-repository";
 import { SessionRepository } from "../repositories/session-repository";
 import crypto from "node:crypto";
+import { BadRequestError, UnauthorizedError, NotFoundError } from "../errors";
 
 /**
  * Melakukan hashing SHA-256 pada token sesi mentah.
@@ -24,7 +25,7 @@ export class UserService {
   async register(data: { name: string; email: string; password: string }) {
     const existingUser = await this.userRepo.findByEmail(data.email);
     if (existingUser) {
-      throw new Error("Email already exists");
+      throw new BadRequestError("Email already exists");
     }
 
     // Use Bun's native password utility (bcrypt)
@@ -54,12 +55,12 @@ export class UserService {
   async login(data: { email: string; password: string }) {
     const user = await this.userRepo.findByEmail(data.email);
     if (!user) {
-      throw new Error("Invalid email or password");
+      throw new UnauthorizedError("Invalid email or password");
     }
 
     const isPasswordValid = await Bun.password.verify(data.password, user.password);
     if (!isPasswordValid) {
-      throw new Error("Invalid email or password");
+      throw new UnauthorizedError("Invalid email or password");
     }
 
     const sessionToken = crypto.randomUUID();
@@ -81,7 +82,7 @@ export class UserService {
   async getProfile(userId: number) {
     const user = await this.userRepo.findById(userId);
     if (!user) {
-      throw new Error("User not found");
+      throw new NotFoundError("User not found");
     }
 
     return {
@@ -100,7 +101,7 @@ export class UserService {
     const hashedToken = hashToken(token);
     const session = await this.sessionRepo.findByToken(hashedToken);
     if (!session) {
-      throw new Error("Invalid or expired session");
+      throw new UnauthorizedError("Invalid or expired session");
     }
 
     // Check if session has expired (7 days)
@@ -108,7 +109,7 @@ export class UserService {
     const isExpired = Date.now() - new Date(session.createdAt).getTime() > sevenDaysInMs;
     if (isExpired) {
       await this.sessionRepo.deleteByToken(hashedToken);
-      throw new Error("Invalid or expired session");
+      throw new UnauthorizedError("Invalid or expired session");
     }
 
     return session;
@@ -122,7 +123,7 @@ export class UserService {
     const hashedToken = hashToken(token);
     const session = await this.sessionRepo.findByToken(hashedToken);
     if (!session) {
-      throw new Error("Invalid or expired token");
+      throw new UnauthorizedError("Invalid or expired token");
     }
     await this.sessionRepo.deleteByToken(hashedToken);
   }
