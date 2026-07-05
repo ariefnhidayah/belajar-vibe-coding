@@ -83,4 +83,24 @@ export const userRoutes = new Elysia({ prefix: "/api" })
       set.status = 401;
       return { error: "Invalid or expired access token" };
     }
+  })
+
+  // Logout Route: DELETE /api/logout
+  .delete("/logout", async ({ headers, set }) => {
+    try {
+      const authHeader = headers["authorization"];
+      if (!authHeader?.startsWith("Bearer ")) {
+        set.status = 401;
+        return { error: "Invalid or expired token" };
+      }
+
+      const token = authHeader.split(" ")[1];
+      await userService.logout(token);
+
+      set.status = 200;
+      return { data: "OK" };
+    } catch (error: any) {
+      set.status = 401;
+      return { error: error.message || "Invalid or expired token" };
+    }
   });

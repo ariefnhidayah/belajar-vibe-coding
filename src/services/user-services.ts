@@ -70,4 +70,12 @@ export class UserService {
     }
     return session;
   }
+
+  async logout(token: string) {
+    const session = await this.sessionRepo.findByToken(token);
+    if (!session) {
+      throw new Error("Invalid or expired token");
+    }
+    await this.sessionRepo.deleteByToken(token);
+  }
 }
