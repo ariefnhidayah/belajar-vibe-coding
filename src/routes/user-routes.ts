@@ -8,6 +8,10 @@ export const userRoutes = new Elysia({ prefix: "/api" })
   // Registration Route: POST /api/users
   .post(
     "/users",
+    /**
+     * Handler untuk pendaftaran user baru.
+     * Menerima payload body dengan validasi schema ketat, lalu memanggil service registrasi.
+     */
     async ({ body, set }) => {
       const result = await userService.register(body);
       set.status = 201;
@@ -25,6 +29,10 @@ export const userRoutes = new Elysia({ prefix: "/api" })
   // Login Route: POST /api/login
   .post(
     "/login",
+    /**
+     * Handler untuk autentikasi login pengguna.
+     * Memverifikasi kredensial dan mengembalikan UUID token session aktif.
+     */
     async ({ body, set }) => {
       const result = await userService.login(body);
       set.status = 200;
@@ -39,6 +47,10 @@ export const userRoutes = new Elysia({ prefix: "/api" })
   )
 
   // Profile Route: GET /api/users/me
+  /**
+   * Handler untuk mengambil data profil milik pengguna yang sedang login.
+   * Memerlukan Authorization token Bearer yang valid.
+   */
   .get("/users/me", async ({ headers, set }) => {
     const authHeader = headers["authorization"];
     if (!authHeader?.startsWith("Bearer ")) {
@@ -54,6 +66,10 @@ export const userRoutes = new Elysia({ prefix: "/api" })
   })
 
   // Logout Route: DELETE /api/logout
+  /**
+   * Handler untuk mengeluarkan pengguna (logout).
+   * Memvalidasi token dan menghapus data session tersebut dari database sessions.
+   */
   .delete("/logout", async ({ headers, set }) => {
     const authHeader = headers["authorization"];
     if (!authHeader?.startsWith("Bearer ")) {

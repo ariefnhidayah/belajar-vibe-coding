@@ -2,6 +2,12 @@ import { UserRepository } from "../repositories/user-repository";
 import { SessionRepository } from "../repositories/session-repository";
 import crypto from "crypto";
 
+/**
+ * Melakukan hashing SHA-256 pada token sesi mentah.
+ * Digunakan untuk mengaburkan token sebelum disimpan atau dicari di database.
+ * @param token Token mentah berbentuk UUID string
+ * @returns Hash token dalam format hex string
+ */
 function hashToken(token: string): string {
   return crypto.createHash("sha256").update(token).digest("hex");
 }
@@ -10,6 +16,11 @@ export class UserService {
   private readonly userRepo = new UserRepository();
   private readonly sessionRepo = new SessionRepository();
 
+  /**
+   * Mendaftarkan pengguna baru setelah memvalidasi email unik dan melakukan hashing password.
+   * @param data Payload data registrasi user (name, email, password)
+   * @returns Objek user terdaftar (id, name, email)
+   */
   async register(data: { name: string; email: string; password: string }) {
     const existingUser = await this.userRepo.findByEmail(data.email);
     if (existingUser) {
@@ -35,6 +46,11 @@ export class UserService {
     };
   }
 
+  /**
+   * Memvalidasi kredensial login pengguna dan membuat token session aktif jika valid.
+   * @param data Kredensial login (email, password)
+   * @returns Objek berisi access_token UUID
+   */
   async login(data: { email: string; password: string }) {
     const user = await this.userRepo.findByEmail(data.email);
     if (!user) {
@@ -57,6 +73,11 @@ export class UserService {
     return { access_token: sessionToken };
   }
 
+  /**
+   * Mengambil detail profil user berdasarkan ID user.
+   * @param userId ID pengguna
+   * @returns Objek user profile (id, name, email)
+   */
   async getProfile(userId: number) {
     const user = await this.userRepo.findById(userId);
     if (!user) {
@@ -70,6 +91,11 @@ export class UserService {
     };
   }
 
+  /**
+   * Memverifikasi validitas token session, mengecek masa kedaluwarsanya (7 hari).
+   * @param token Token mentah dari authorization header
+   * @returns Objek session dari database jika valid
+   */
   async verifySession(token: string) {
     const hashedToken = hashToken(token);
     const session = await this.sessionRepo.findByToken(hashedToken);
@@ -88,6 +114,10 @@ export class UserService {
     return session;
   }
 
+  /**
+   * Menghapus token session aktif pengguna dari database (proses logout).
+   * @param token Token mentah dari authorization header
+   */
   async logout(token: string) {
     const hashedToken = hashToken(token);
     const session = await this.sessionRepo.findByToken(hashedToken);
