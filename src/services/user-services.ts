@@ -1,5 +1,10 @@
 import { UserRepository } from "../repositories/user-repository";
 import { SessionRepository } from "../repositories/session-repository";
+import crypto from "crypto";
+
+function hashToken(token: string): string {
+  return crypto.createHash("sha256").update(token).digest("hex");
+}
 
 export class UserService {
   private readonly userRepo = new UserRepository();
@@ -42,8 +47,10 @@ export class UserService {
     }
 
     const sessionToken = crypto.randomUUID();
+    const hashedToken = hashToken(sessionToken);
+    
     await this.sessionRepo.create({
-      token: sessionToken,
+      token: hashedToken,
       userId: user.id,
     });
 
@@ -64,18 +71,29 @@ export class UserService {
   }
 
   async verifySession(token: string) {
-    const session = await this.sessionRepo.findByToken(token);
+    const hashedToken = hashToken(token);
+    const session = await this.sessionRepo.findByToken(hashedToken);
     if (!session) {
       throw new Error("Invalid or expired session");
     }
+
+    // Check if session has expired (7 days)
+    const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
+    const isExpired = Date.now() - new Date(session.createdAt).getTime() > sevenDaysInMs;
+    if (isExpired) {
+      await this.sessionRepo.deleteByToken(hashedToken);
+      throw new Error("Invalid or expired session");
+    }
+
     return session;
   }
 
   async logout(token: string) {
-    const session = await this.sessionRepo.findByToken(token);
+    const hashedToken = hashToken(token);
+    const session = await this.sessionRepo.findByToken(hashedToken);
     if (!session) {
       throw new Error("Invalid or expired token");
     }
-    await this.sessionRepo.deleteByToken(token);
+    await this.sessionRepo.deleteByToken(hashedToken);
   }
 }
